@@ -8,7 +8,12 @@ import Home from "./pages/Home";
 import Customize2 from "./pages/Customize2";
 
 function App() {
-  const { userData, setUserData } = useContext(userDataContext);
+  const { userData, loading } = useContext(userDataContext);
+
+  if (loading) {
+      return <div className="flex justify-center items-center h-screen text-xl font-semibold">Loading...</div>;
+  }
+
   return (
     <Routes>
       <Route

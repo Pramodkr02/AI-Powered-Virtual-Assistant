@@ -1,21 +1,30 @@
 import axios from "axios";
 import React, { createContext, useEffect, useState } from "react";
 export const userDataContext = createContext();
+
 function UserContext({ children }) {
-  const serverUrl = "http://localhost:8000";
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [frontendImage, setFrontendImage] = useState(null);
   const [backendImage, setBackendImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+
   const handleCurrentUser = async () => {
+    setLoading(true);
     try {
       const result = await axios.get(`${serverUrl}/api/user/current`, {
         withCredentials: true,
       });
-      setUserData(result.data);
-      console.log(result.data);
+      if (result.status === 200) {
+        setUserData(result.data);
+      }
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching user:", error);
+      // Even if error, we must stop loading. 
+      // User remains null, which is correct for unauthenticated state.
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -35,10 +44,12 @@ function UserContext({ children }) {
   useEffect(() => {
     handleCurrentUser();
   }, []);
+
   const value = {
     serverUrl,
     userData,
     setUserData,
+    loading, 
     backendImage,
     setBackendImage,
     frontendImage,
@@ -47,12 +58,11 @@ function UserContext({ children }) {
     setSelectedImage,
     getGeminiResponse,
   };
+
   return (
-    <div>
-      <userDataContext.Provider value={value}>
-        {children}
-      </userDataContext.Provider>
-    </div>
+    <userDataContext.Provider value={value}>
+      {children}
+    </userDataContext.Provider>
   );
 }
 
