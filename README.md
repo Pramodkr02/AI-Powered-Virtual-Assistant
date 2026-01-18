@@ -4,13 +4,17 @@ A full-stack, voice-responsive virtual assistant application that allows users t
 
 ---
 
+[**Live Website Link**](https://ai-powered-virtual-assistant.vercel.app/)
+
 ## 🚀 Features
 
 ### **Personalized Assistant**
+
 - **Custom Identity**: Set a unique name and image for your AI assistant.
 - **Dynamic Interactions**: Engaging voice and text-based responses powered by Google's Gemini AI.
 
 ### **Functional Commands**
+
 - **Web Search**: Integrated Google and YouTube searching.
 - **Media Playback**: Directly play videos or songs on YouTube.
 - **Utility Tools**: Get the current time, date, day, and month.
@@ -18,6 +22,7 @@ A full-stack, voice-responsive virtual assistant application that allows users t
 - **Weather Updates**: Real-time weather information (logic integrated).
 
 ### **User System**
+
 - **Secure Authentication**: Robust Sign-Up and Sign-In system using JWT and Bcrypt.
 - **Session Management**: Persistent sessions via secure HTTP-only cookies.
 - **Profile Management**: Current user state managed through React Context API.
@@ -27,6 +32,7 @@ A full-stack, voice-responsive virtual assistant application that allows users t
 ## 🛠️ Tech Stack
 
 ### **Frontend**
+
 - **React (Vite)**: For a fast, modern UI development experience.
 - **Tailwind CSS**: Premium, responsive styling with a focus on modern aesthetics.
 - **React Router Dom**: Seamless navigation and protected routing.
@@ -34,6 +40,7 @@ A full-stack, voice-responsive virtual assistant application that allows users t
 - **React Icons**: High-quality UI icons.
 
 ### **Backend**
+
 - **Node.js & Express**: Scalable and flexible server architecture.
 - **MongoDB & Mongoose**: Fast and efficient NoSQL data storage.
 - **Gemini AI SDK**: Powering the core intelligence of the virtual assistant.
@@ -47,6 +54,7 @@ A full-stack, voice-responsive virtual assistant application that allows users t
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - [Node.js](https://nodejs.org/) (v16.x or higher)
 - [MongoDB](https://www.mongodb.com/) (Local or Atlas)
 - [Cloudinary Account](https://cloudinary.com/) (For image uploads)
@@ -57,12 +65,14 @@ Before you begin, ensure you have the following installed:
 ## ⚙️ Installation & Setup
 
 ### **1. Clone the Repository**
+
 ```bash
 git clone https://github.com/Pramodkr02/AI-Powered-Virtual-Assistant.git
 cd AI-Powered-Virtual-Assistant
 ```
 
 ### **2. Backend Configuration**
+
 1. Navigate to the backend directory:
    ```bash
    cd backend
@@ -87,6 +97,7 @@ cd AI-Powered-Virtual-Assistant
    ```
 
 ### **3. Frontend Configuration**
+
 1. Open a new terminal and navigate to the frontend directory:
    ```bash
    cd frontend
@@ -105,18 +116,20 @@ cd AI-Powered-Virtual-Assistant
 ## 🔌 API Endpoints
 
 ### **Authentication**
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| POST | `/api/auth/signup` | Register a new user |
-| POST | `/api/auth/signin` | Login existing user |
-| GET | `/api/auth/logout` | Terminate user session |
+
+| Method | Endpoint           | Description            |
+| :----- | :----------------- | :--------------------- |
+| POST   | `/api/auth/signup` | Register a new user    |
+| POST   | `/api/auth/signin` | Login existing user    |
+| GET    | `/api/auth/logout` | Terminate user session |
 
 ### **User & Assistant**
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| GET | `/api/user/current` | Get logged-in user details |
-| POST | `/api/user/update` | Update assistant name and image |
-| POST | `/api/user/asktoassistant` | Interact with the AI assistant |
+
+| Method | Endpoint                   | Description                     |
+| :----- | :------------------------- | :------------------------------ |
+| GET    | `/api/user/current`        | Get logged-in user details      |
+| POST   | `/api/user/update`         | Update assistant name and image |
+| POST   | `/api/user/asktoassistant` | Interact with the AI assistant  |
 
 ---
 
@@ -146,6 +159,7 @@ VirtualAssistance/
 ## 🤝 Contribution
 
 Contributions are welcome! If you'd like to improve the Virtual Assistant:
+
 1. Fork the project.
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
@@ -157,6 +171,7 @@ Contributions are welcome! If you'd like to improve the Virtual Assistant:
 ## 👤 Author
 
 **Pramod Kumar**
+
 - GitHub: [@Pramodkr02](https://github.com/Pramodkr02)
 
 ---

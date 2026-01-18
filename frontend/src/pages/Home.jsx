@@ -33,10 +33,14 @@ function Home() {
   };
 
   const startRecognition = () => {
-    if (!isSpeakingRef.current && !isRecognizingRef.current) {
+    if (
+      recognitionRef.current &&
+      !isSpeakingRef.current &&
+      !isRecognizingRef.current
+    ) {
       try {
-        recognitionRef.current?.start();
-        console.log("Recognition requested to start");
+        recognitionRef.current.start();
+        // console.log("Recognition requested to start");
       } catch (error) {
         if (error.name !== "InvalidStateError") {
           console.error("Start error:", error);
@@ -45,9 +49,18 @@ function Home() {
     }
   };
 
-  //  Speech Synthesis function
-
   const speak = (text) => {
+    // Stop recognition immediately when speaking starts
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+        isRecognizingRef.current = false;
+        setListening(false);
+      } catch (e) {
+        // ignore stop errors
+      }
+    }
+
     const utterence = new SpeechSynthesisUtterance(text);
     utterence.lang = "hi-IN";
     const voices = window.speechSynthesis.getVoices();
@@ -60,11 +73,12 @@ function Home() {
     utterence.onend = () => {
       setAiText("");
       isSpeakingRef.current = false;
+      // Small delay before restarting recognition to avoid mic picking up last echo
       setTimeout(() => {
-        startRecognition(); // ⏳ Delay se race condition avoid hoti hai
-      }, 800);
+        startRecognition();
+      }, 500);
     };
-    synth.cancel(); // 🛑 pehle se koi speech ho to band karo
+    synth.cancel();
     synth.speak(utterence);
   };
 
@@ -101,80 +115,88 @@ function Home() {
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    
+    if (!SpeechRecognition) {
+      console.error("Speech Recognition API not supported in this browser.");
+      return; 
+    }
 
+    const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.lang = "en-US";
     recognition.interimResults = false;
-
     recognitionRef.current = recognition;
 
-    let isMounted = true; // flag to avoid setState on unmounted component
-
-    // Start recognition after 1 second delay only if component still mounted
-    const startTimeout = setTimeout(() => {
-      if (isMounted && !isSpeakingRef.current && !isRecognizingRef.current) {
-        try {
-          recognition.start();
-          console.log("Recognition requested to start");
-        } catch (e) {
-          if (e.name !== "InvalidStateError") {
-            console.error(e);
-          }
-        }
-      }
-    }, 1000);
+    let isMounted = true; 
 
     recognition.onstart = () => {
       isRecognizingRef.current = true;
       setListening(true);
+      // console.log("Recognition started");
     };
 
     recognition.onend = () => {
       isRecognizingRef.current = false;
       setListening(false);
+      // console.log("Recognition ended");
+
+      // Auto-restart if we are not speaking and component is mounted
+      // But only if it wasn't a fatal error (handled in onerror)
       if (isMounted && !isSpeakingRef.current) {
+        // minimal delay for normal restarts
         setTimeout(() => {
-          if (isMounted) {
-            try {
-              recognition.start();
-              console.log("Recognition restarted");
-            } catch (e) {
-              if (e.name !== "InvalidStateError") console.error(e);
-            }
-          }
-        }, 1000);
+          startRecognition();
+        }, 500); 
       }
     };
 
     recognition.onerror = (event) => {
-      console.warn("Recognition error:", event.error);
       isRecognizingRef.current = false;
       setListening(false);
-      if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
+
+      if (event.error === "no-speech") {
+        // Normal behavior, just silence. Restart quickly.
+        return; 
+        // onend will trigger and restart it.
+      }
+
+      console.warn("Recognition error:", event.error);
+      
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        // Fatal errors. Stop trying.
+        isMounted = false; // Effectively stop the loop
+        alert("Microphone access denied or service unavailable.");
+        return;
+      }
+
+      if (event.error === "network") {
+        // Backoff for network errors
+        // onend will trigger, but we want to delay the next start logic
+        isSpeakingRef.current = true; // Temporary hack to block onend restart
         setTimeout(() => {
-          if (isMounted) {
-            try {
-              recognition.start();
-              console.log("Recognition restarted after error");
-            } catch (e) {
-              if (e.name !== "InvalidStateError") console.error(e);
-            }
-          }
-        }, 1000);
+           isSpeakingRef.current = false; // Unblock
+           if(isMounted) startRecognition();
+        }, 5000); // 5 second cool down
+        return;
       }
     };
 
     recognition.onresult = async (e) => {
       const transcript = e.results[e.results.length - 1][0].transcript.trim();
+      // console.log("Heard:", transcript);
+
       if (
         transcript.toLowerCase().includes(userData.assistantName.toLowerCase())
       ) {
+        // Valid command heard
         setAiText("");
         setUserText(transcript);
-        recognition.stop();
+        
+        // Stop recognition processing while we think
+        recognition.abort(); 
         isRecognizingRef.current = false;
         setListening(false);
+
         const data = await getGeminiResponse(transcript);
         handleCommand(data);
         setAiText(data.response);
@@ -182,21 +204,27 @@ function Home() {
       }
     };
 
+    // Initial Start
+    const startTimeout = setTimeout(() => {
+       startRecognition();
+    }, 1000);
+
     const greeting = new SpeechSynthesisUtterance(
       `Hello ${userData.name}, what can I help you with?`
     );
     greeting.lang = "hi-IN";
-
-    window.speechSynthesis.speak(greeting);
+    // window.speechSynthesis.speak(greeting); // Optional: might conflict if not careful, keeping for now
 
     return () => {
       isMounted = false;
       clearTimeout(startTimeout);
-      recognition.stop();
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
       setListening(false);
       isRecognizingRef.current = false;
     };
-  }, []);
+  }, [userData]); // Add userData dependency if it's used inside effects setup (like checking name)
 
   return (
     <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#02023d] flex justify-center items-center flex-col gap-[15px] overflow-hidden">
